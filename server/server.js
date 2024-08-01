@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const user = require("./module/user");
+const User = require("./module/user"); // Ensure this path is correct
 const bcrypt = require("bcrypt");
 const auth = require("./middleware/auth")
 const cors = require("cors");
@@ -60,6 +60,25 @@ app.post("/log-in", async (req, res) => {
         res.status(500).json({ message: "Internal servar Error"})
     }
 })
+
+app.get("/profile", auth, async (req, res) => {
+    try {
+        console.log('Fetching profile for user ID:', req.user._id);
+
+        const user = await User.findById(req.user._id); // Use `User` with uppercase 'U'
+        if (!user) {
+            console.log('User not found');
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({
+            username: user.username,
+            email: user.email,
+        });
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        res.status(500).json({ message: "Error fetching profile", error });
+    }
+});
 
 app.listen(port, () => {
     console.log(`This app is listening on port ${port}`);

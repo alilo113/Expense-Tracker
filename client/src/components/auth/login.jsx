@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export function Login() {
     const [username, setUsername] = useState("");
@@ -28,12 +27,12 @@ export function Login() {
             if (res.ok) {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userID", data.userID);
-                navigate("/"); // Redirect to dashboard or another page
+                navigate("/"); // Redirect to the home page or dashboard
             } else {
                 setError(data.message || "Login failed");
             }
         } catch (error) {
-            console.log("Fetch error", error);
+            console.error("Fetch error:", error); // Improved logging
             setError("Something went wrong");
         } finally {
             setLoading(false); // Reset loading state
