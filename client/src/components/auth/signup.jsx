@@ -9,29 +9,26 @@ export function Signup() {
     const nav = useNavigate();
 
     async function handleSignUp(event) {
-        event.preventDefault();
+        event.preventDefault()
+        
         try {
             const res = await fetch("http://localhost:3000/sign-up", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ username, email, password })
-            });
-    
-            // Check if response is not ok
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.message || "Registration failed");
-                return;
+                body: JSON.stringify({username, email, password})
+            })
+
+            const data = await res.json()
+            if(res.ok){
+                nav("/log-in")
+            }else{
+                setError(data.error || data.message || "Registration failed"); // Use data.error or data.message
             }
-    
-            // Handle success case
-            const data = await res.json();
-            nav("/log-in");
         } catch (error) {
-            console.log("Fetch error", error);
-            setError("Something went wrong");
+            console.log("Fetch error", error)
+            setError("Something went wrong")
         }
     }    
 
@@ -79,7 +76,7 @@ export function Signup() {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
+                    {error && <p className="text-white text-sm bg-red-700 p-3 rounded mb-3">{error}</p>}
                     <button
                         type="submit"
                         className="w-full bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
