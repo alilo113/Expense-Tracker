@@ -1,6 +1,5 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Header } from "./components/home/header"
 import { Home } from "./components/home/home";
 import { Login } from "./components/auth/login";
 import { Signup } from "./components/auth/signup";
@@ -18,7 +17,6 @@ function App() {
   
   return (
     <Router>
-      <Header userProfile={userProfile} setUserProfile={setUserProfile} /> 
       <Routes>
         <Route path="/" element={<Home userProfile={userProfile} setUserProfile={setUserProfile} />} />
         <Route path="/login" element={<Login setUserProfile={setUserProfile} />} />
