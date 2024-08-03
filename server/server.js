@@ -6,6 +6,7 @@ const user = require("./module/user");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const jwt = require("jsonwebtoken")
+const auth = require("./middleware/auth");
 require('dotenv').config();
 
 app.use(cors());
@@ -36,41 +37,40 @@ app.post('/signup', async (req, res) => {
             console.error('Error creating user:', error);
             res.status(500).json({ error: 'Internal Server Error' });
         }
-    });
+});
+
+// Log-in route
+app.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;                
+        
+        const userExist = await user.findOne({ email });
     
-    // Log-in route
-    app.post("/login", async (req, res) => {
-        try {
-            const { email, password } = req.body;
+        if (!userExist) {
+            return res.status(401).json({ message: "Wrong email or password" });
+        }
     
-            const userExist = await user.findOne({ email });
+        // Check if password matches
+        const match = await bcrypt.compare(password, userExist.password);
     
-            if (!userExist) {
-                return res.status(401).json({ message: "Wrong email or password" });
-            }
+        if (!match) {
+            return res.status(401).json({ message: "Wrong email or password" });
+        }
     
-            // Check if password matches
-            const match = await bcrypt.compare(password, userExist.password);
-    
-            if (!match) {
-                return res.status(401).json({ message: "Wrong email or password" });
-            }
-    
-            // Generate token
-            const token = jwt.sign({ id: userExist._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    
-            // Send response
-            return res.status(200).json({
-                username: userExist.username,
-                userID: userExist._id.toString(),
-                token
-            });
+        // Generate token
+        const token = jwt.sign({ id: userExist._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // Send response
+        return res.status(200).json({
+            username: userExist.username,
+            userID: userExist._id.toString(),
+            token
+        });
             
         } catch (error) {
             console.error("Login error:", error);
             return res.status(500).json({ message: "Internal Server Error" });
         }
-    });
+});
     
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

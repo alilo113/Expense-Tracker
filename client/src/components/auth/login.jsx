@@ -1,10 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export function Login() {
+export function Login({ setUserProfile }) {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
-    const [loading, setLoading] = useState("")
+    const [loading, setLoading] = useState(false)
+    const nav = useNavigate()
+
+    useEffect(() => {
+        const storedUsername = localStorage.getItem("username");
+        if (storedUsername) {
+          setUserProfile(storedUsername);
+        }
+    }, [setUserProfile]);
 
     async function handleLogIn(e) {
         e.preventDefault(); // Prevent the default form submission
@@ -23,11 +32,11 @@ export function Login() {
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem("token", data.token);
-                // Call setUserProfile if needed
-                console.log("Stored token:", localStorage.getItem("token"));
-                // Redirect after successful login
-                console.log("user loged in")
+                localStorage.setItem("username", data.username);
+                setUserProfile(data.username);
+                setEmail("");
+                setPassword("");
+                nav("/")
             } else {
                 const data = await response.json();
                 throw new Error(data.message || "Login failed");
@@ -72,9 +81,11 @@ export function Login() {
                     <button
                         type="submit"
                         className="w-full bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
+                        disabled={loading}
                     >
-                        Login
+                        {loading ? "Logging In..." : "Login"}
                     </button>
+                    {error && <p className="text-red-500 text-center mt-4">{error}</p>}
                     <p className="text-center text-gray-600 mt-4">
                         Don't have an account? <a href="/signup" className="text-teal-500 hover:underline">Sign Up</a>
                     </p>
