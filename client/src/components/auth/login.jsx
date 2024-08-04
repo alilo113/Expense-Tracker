@@ -2,24 +2,23 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function Login({ setUserProfile }) {
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [error, setError] = useState("")
-    const [loading, setLoading] = useState(false)
-    const nav = useNavigate()
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const nav = useNavigate();
 
     useEffect(() => {
         const storedUsername = localStorage.getItem("username");
         if (storedUsername) {
-          setUserProfile(storedUsername);
+            setUserProfile(storedUsername);
         }
     }, [setUserProfile]);
 
     async function handleLogIn(e) {
-        e.preventDefault(); // Prevent the default form submission
-    
-        setLoading(true); // Set loading to true
-        setError(""); // Clear any previous errors
+        e.preventDefault();
+        setLoading(true);
+        setError("");
     
         try {
             const response = await fetch("http://localhost:3000/login", {
@@ -29,14 +28,22 @@ export function Login({ setUserProfile }) {
                 },
                 body: JSON.stringify({ email, password }),
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
+                // Store values in localStorage
                 localStorage.setItem("username", data.username);
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("userID", data.userID);
+    
+                // Log the token value received from the server
+                console.log("Stored Token:", data.token); // Access the token from the `data` object
+                nav("/")
+                // Set user profile and clear form fields
                 setUserProfile(data.username);
                 setEmail("");
                 setPassword("");
-                nav("/")
+                // nav("/"); // Uncomment this if you want to navigate after login
             } else {
                 const data = await response.json();
                 throw new Error(data.message || "Login failed");
@@ -45,9 +52,10 @@ export function Login({ setUserProfile }) {
             console.error('Login error:', error);
             setError(error.message || "Something went wrong");
         } finally {
-            setLoading(false); // Set loading to false
+            setLoading(false);
         }
-    }  
+    }
+    
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">

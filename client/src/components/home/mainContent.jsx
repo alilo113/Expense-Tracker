@@ -1,33 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export function Main({ userProfile }) {
     const [category, setCategory] = useState("");
     const [expense, setExpense] = useState("");
     const [amount, setAmount] = useState("");
+    const [expenses, setExpenses] = useState([]);
 
     async function handleNewExpense(e) {
         e.preventDefault();
         
         try {
-            const userID = localStorage.getItem("userID"); // Retrieve userID from localStorage
+            const userID = localStorage.getItem("userID");
+            const token = localStorage.getItem('token');
 
-            const res = await fetch("http://localhost:3000/", {
+            console.log("Retrieved Token:", token); // Check the token value
+
+            const res = await fetch("http://localhost:3000/expenses", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ user: userID, expense: expense, category: category, amount: amount }),
+                body: JSON.stringify({ 
+                    user: userID, 
+                    expense: expense, 
+                    category: category, 
+                    amount: parseFloat(amount) // Ensure amount is a number
+                }),
             });
-
+            
             if (!res.ok) {
                 const errorData = await res.json();
+                console.error("Response Error:", errorData); // Log error response
                 throw new Error(`Network response was not ok: ${errorData.message || "Unknown error"}`);
             }
-    
+            
             const data = await res.json();
-            console.log("Expense created:", data); // Log the response data
+            setExpenses((prevExpenses) => {
+                const updatedExpenses = [...prevExpenses, data];
+                console.log("Updated Expenses:", updatedExpenses); // Log the updated expenses
+                return updatedExpenses;
+            });
         } catch (error) {
             console.error("Error submitting the expense:", error.message);
         }
@@ -81,6 +95,24 @@ export function Main({ userProfile }) {
                             />
                         </div>
                     </form>
+                    <table className="min-w-full bg-white">
+                        <thead>
+                            <tr>
+                                <th className="border-b p-2">Category</th>
+                                <th className="border-b p-2">Expense</th>
+                                <th className="border-b p-2">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {expenses.map((expense) => (
+                                <tr key={expense._id}>
+                                    <td className="border-b p-2">{expense.category}</td>
+                                    <td className="border-b p-2">{expense.expense}</td>
+                                    <td className="border-b p-2">{expense.amount}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </>
             ) : (
                 <div className="flex-grow flex justify-center items-center">

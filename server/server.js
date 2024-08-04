@@ -73,24 +73,19 @@ app.post("/login", async (req, res) => {
         }
 });
    
-app.post("/", auth, async (req, res) => {
-    const { category, expense, amount } = req.body;
+app.post("/expenses", auth, async (req, res) => {
+    const { category, expense, amount, user } = req.body;
 
-    // Validate input
-    if (!category || !expense || !amount) {
+    if (!category || !expense || !amount || !user) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
     try {
-        // Create a new expense object
-        const newExpense = new Expense({ category, expense, amount });
-        console.log(newExpense);
-
-        // Save the new expense to the database
+        const newExpense = new Expense({ category, expense, amount, user });
         await newExpense.save();
-        res.status(200).json({ message: "Expense Created!!!" });
+        res.status(200).json({newExpense});
     } catch (error) {
-        console.log("Expense creating error:", error.message);
+        console.error("Expense creating error:", error.message);
         res.status(500).json({ message: "Failed to create expense. Try again later." });
     }
 });
