@@ -3,6 +3,7 @@ const app = express();
 const port = 3000;
 const bcrypt = require("bcrypt");
 const user = require("./module/user");
+const Expense = require("./module/expense");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const jwt = require("jsonwebtoken")
@@ -71,7 +72,29 @@ app.post("/login", async (req, res) => {
             return res.status(500).json({ message: "Internal Server Error" });
         }
 });
-    
+   
+app.post("/", auth, async (req, res) => {
+    const { category, expense, amount } = req.body;
+
+    // Validate input
+    if (!category || !expense || !amount) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    try {
+        // Create a new expense object
+        const newExpense = new Expense({ category, expense, amount });
+        console.log(newExpense);
+
+        // Save the new expense to the database
+        await newExpense.save();
+        res.status(200).json({ message: "Expense Created!!!" });
+    } catch (error) {
+        console.log("Expense creating error:", error.message);
+        res.status(500).json({ message: "Failed to create expense. Try again later." });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });

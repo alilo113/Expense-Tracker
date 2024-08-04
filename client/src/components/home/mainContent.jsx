@@ -1,31 +1,68 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 export function Main({ userProfile }) {
+    const [category, setCategory] = useState("");
+    const [expense, setExpense] = useState("");
+    const [amount, setAmount] = useState("");
+
+    async function handleNewExpense(e) {
+        e.preventDefault();
+        
+        try {
+            const userID = localStorage.getItem("userID"); // Retrieve userID from localStorage
+
+            const res = await fetch("http://localhost:3000/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ user: userID, expense: expense, category: category, amount: amount }),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(`Network response was not ok: ${errorData.message || "Unknown error"}`);
+            }
+    
+            const data = await res.json();
+            console.log("Expense created:", data); // Log the response data
+        } catch (error) {
+            console.error("Error submitting the expense:", error.message);
+        }
+    }
+
     return (
         <main className="flex-grow flex flex-col p-8 min-h-screen">
             {userProfile ? (
                 <>
-                    <div className="w-full max-w-4xl bg-white shadow-md rounded p-6 flex items-center">
+                    <form onSubmit={handleNewExpense} className="w-full max-w-4xl bg-white shadow-md rounded p-6 flex items-center">
                         {/* Input Fields */}
                         <div className="flex-grow flex space-x-4">
                             <input
                                 type="text"
                                 placeholder="Category"
                                 className="border border-gray-300 p-2 rounded w-full"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
                             />
                             <input
                                 type="text"
                                 placeholder="Expense"
                                 className="border border-gray-300 p-2 rounded w-full"
+                                value={expense}
+                                onChange={(e) => setExpense(e.target.value)}
                             />
                             <input
                                 type="number"
                                 placeholder="Amount"
                                 className="border border-gray-300 p-2 rounded w-full"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
                             />
                             <button
-                                onClick={() => alert('Add expense functionality needs to be implemented')}
+                                type="submit"
                                 className="bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-700"
                             >
                                 Add Expense
@@ -43,7 +80,7 @@ export function Main({ userProfile }) {
                                 className="border border-gray-300 p-2 rounded"
                             />
                         </div>
-                    </div>
+                    </form>
                 </>
             ) : (
                 <div className="flex-grow flex justify-center items-center">
