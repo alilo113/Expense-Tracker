@@ -90,6 +90,17 @@ app.post("/expenses", auth, async (req, res) => {
     }
 });
 
+app.get("/expenses", auth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const expenses = await Expense.find({ user: userId }); // Fetch expenses by user
+        res.status(200).json({ expenses }); // Return expenses
+    } catch (error) {
+        console.log("Fetching error", error);
+        res.status(500).json({ message: "Error fetching expenses", error: error.message });
+    } 
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });

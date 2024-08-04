@@ -31,19 +31,16 @@ export function Login({ setUserProfile }) {
     
             if (response.ok) {
                 const data = await response.json();
-                // Store values in localStorage
                 localStorage.setItem("username", data.username);
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("userID", data.userID);
     
-                // Log the token value received from the server
-                console.log("Stored Token:", data.token); // Access the token from the `data` object
-                nav("/")
-                // Set user profile and clear form fields
+                console.log("Stored Token:", data.token);
+
                 setUserProfile(data.username);
                 setEmail("");
                 setPassword("");
-                // nav("/"); // Uncomment this if you want to navigate after login
+                 nav("/"); 
             } else {
                 const data = await response.json();
                 throw new Error(data.message || "Login failed");
