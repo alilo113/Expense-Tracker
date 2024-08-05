@@ -6,14 +6,21 @@ export function Main({ userProfile }) {
     const [expense, setExpense] = useState("");
     const [amount, setAmount] = useState("");
     const [expenses, setExpenses] = useState([]);
+    const [query, setQuery] = useState(""); // Added query state
+
+    // Fixed filterExpense function
+    const filterExpense = expenses.filter(expense =>
+        expense.category.toLowerCase().includes(query.toLowerCase()) ||
+        expense.expense.toLowerCase().includes(query.toLowerCase())
+    );
 
     function getToken() {
         const token = localStorage.getItem("token");
         if (!token) {
             console.error("No token found");
-            return null; // Return null if no token is found
+            return null;
         }
-        console.log("Retrieved Token:", token); // Log token to verify
+        console.log("Retrieved Token:", token);
         return token;
     }
 
@@ -23,7 +30,7 @@ export function Main({ userProfile }) {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    'Authorization': `Bearer ${getToken()}`, // Ensure token is valid
+                    'Authorization': `Bearer ${getToken()}`,
                 }
             });
         
@@ -34,7 +41,6 @@ export function Main({ userProfile }) {
             const data = await res.json();
             console.log(data);
     
-            // Check if data.expenses is an array
             if (!Array.isArray(data.expenses)) {
                 throw new TypeError("Fetched data is not an array");
             }
@@ -46,15 +52,15 @@ export function Main({ userProfile }) {
     }
 
     useEffect(() => {
-        fetchExpenses(); // Call the fetchExpenses function inside useEffect
-    }, []); // Empty dependency array ensures this runs once on component mount
+        fetchExpenses();
+    }, []);
 
     async function handleNewExpense(e) {
         e.preventDefault();
         
         try {
             const userID = localStorage.getItem("userID");
-            const token = getToken(); // Use the getToken function
+            const token = getToken();
 
             if (!token) {
                 console.error("No token available");
@@ -71,22 +77,21 @@ export function Main({ userProfile }) {
                     user: userID, 
                     expense: expense, 
                     category: category, 
-                    amount: parseFloat(amount) // Ensure amount is a number
+                    amount: parseFloat(amount)
                 }),
             });
             
             if (!res.ok) {
                 const errorData = await res.json();
-                console.error("Response Error:", errorData); // Log error response
+                console.error("Response Error:", errorData);
                 throw new Error(`Network response was not ok: ${errorData.message || "Unknown error"}`);
             }
             
-            // Fetch updated expenses after adding a new one
             fetchExpenses();
 
             setCategory("");
             setExpense("");
-            setAmount(""); // Clear input fields after submission
+            setAmount("");
         } catch (error) {
             console.error("Error submitting the expense:", error.message);
         }
@@ -97,7 +102,6 @@ export function Main({ userProfile }) {
             {userProfile ? (
                 <>
                     <form onSubmit={handleNewExpense} className="w-full max-w-4xl bg-white shadow-md rounded p-6 flex items-center">
-                        {/* Input Fields */}
                         <div className="flex-grow flex space-x-4">
                             <input
                                 type="text"
@@ -128,15 +132,15 @@ export function Main({ userProfile }) {
                             </button>
                         </div>
 
-                        {/* Vertical Line */}
                         <div className="border-l border-gray-300 h-12 mx-4"></div>
 
-                        {/* Search Bar */}
                         <div className="flex-shrink-0">
                             <input
                                 type="text"
                                 placeholder="Search..."
                                 className="border border-gray-300 p-2 rounded"
+                                value={query} // Bind query state to input
+                                onChange={(e) => setQuery(e.target.value)}
                             />
                         </div>
                     </form>
@@ -149,7 +153,7 @@ export function Main({ userProfile }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {expenses.map((expense, index) => {
+                            {filterExpense.map((expense, index) => {
                                 const key = `${expense._id}-${index}`;
                                 return (
                                     <tr key={key} className="min-w-full bg-white">
