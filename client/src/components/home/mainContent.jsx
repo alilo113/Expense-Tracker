@@ -150,7 +150,7 @@ export function Main({ userProfile }) {
                         </thead>
                         <tbody>
                             {expenses.map((expense, index) => {
-                                const key = `${expense._id}-${index}`; 
+                                const key = `${expense._id}-${index}`;
                                 return (
                                     <tr key={key} className="min-w-full bg-white">
                                         <td className="border-b p-2 text-center">{expense.category}</td>
