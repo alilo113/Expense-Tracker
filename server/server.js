@@ -74,14 +74,15 @@ app.post("/login", async (req, res) => {
 });
    
 app.post("/expenses", auth, async (req, res) => {
-    const { category, expense, amount, user } = req.body;
+    const { category, expense, amount, user} = req.body;
 
     if (!category || !expense || !amount || !user) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
     try {
-        const newExpense = new Expense({ category, expense, amount, user });
+        const newExpense = new Expense({ category, expense, amount, user});
+        console.log(newExpense)
         await newExpense.save();
         res.status(200).json({newExpense});
     } catch (error) {

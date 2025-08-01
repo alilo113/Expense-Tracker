@@ -77,7 +77,7 @@ export function Main({ userProfile }) {
                     user: userID, 
                     expense: expense, 
                     category: category, 
-                    amount: parseFloat(amount)
+                    amount: parseFloat(amount),
                 }),
             });
             
