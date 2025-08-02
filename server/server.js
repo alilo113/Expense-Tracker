@@ -16,10 +16,9 @@ app.use(express.json());
 mongoose.connect("mongodb://127.0.0.1:27017/ETDB")
     .then(() => console.log("Database connected"))
     .catch((error) => console.log(error));
-
-app.post('/signup', async (req, res) => {
-    const { username, email, password } = req.body;
-    
+    app.post('/signup', async (req, res) => {
+        const { username, email, password } = req.body;
+        
     try {
         // Check if user already exists
         const userEXist = await user.findOne({ username });
@@ -66,7 +65,7 @@ app.post("/login", async (req, res) => {
             userID: userExist._id.toString(),
             token
         });
-            
+        
         } catch (error) {
             console.error("Login error:", error);
             return res.status(500).json({ message: "Internal Server Error" });
@@ -75,7 +74,7 @@ app.post("/login", async (req, res) => {
    
 app.post("/expenses", auth, async (req, res) => {
     const { category, expense, amount, user} = req.body;
-
+    
     if (!category || !expense || !amount || !user) {
         return res.status(400).json({ message: "All fields are required" });
     }
@@ -100,6 +99,30 @@ app.get("/expenses", auth, async (req, res) => {
         console.log("Fetching error", error);
         res.status(500).json({ message: "Error fetching expenses", error: error.message });
     } 
+});
+
+app.get("/get-amount", auth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const result = await Expense.aggregate([
+            {
+                $match: { user: new mongoose.Types.ObjectId(userId) } // Only this user's expenses
+            },
+            {
+                $group: {
+                    _id: "$category", // Group by category
+                    totalAmount: { $sum: "$amount" } // Sum the amount per category
+                }
+            }
+        ]);
+
+        res.status(200).json({ result });
+        console.log(result)
+    } catch (error) {
+        console.error("Aggregation error:", error);
+        res.status(500).json({ message: "Aggregation failed", error: error.message });
+    }
 });
 
 app.listen(port, () => {
